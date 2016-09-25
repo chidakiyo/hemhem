@@ -17,10 +17,10 @@ clean:
 	#rm -rf $(VENDOR_GOPATH)
 
 run:
-	goapp serve ./src
+	GOPATH=$(VENDOR_GOPATH) go run Main.go
 
 clean-run:
-	goapp serve --clear_datastore ./src
+	go serve --clear_datastore ./src
 
 test:
 	GOPATH=$(VENDOR_GOPATH):$(ROOT_GOPATH) goapp test -v ./src/...
