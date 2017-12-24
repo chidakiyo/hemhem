@@ -36,6 +36,7 @@ func main() {
 	go func() {
 		for {
 			data := <-resultCh
+			// ここでbqとかにぶん投げる
 			logger.Info(fmt.Sprintf("[OUTPUT] %v", data))
 			logger.Info("-----------------------------------------------")
 		}
@@ -45,12 +46,15 @@ func main() {
 	for {
 		select {
 		case <-t.C:
-			du.Fetch(func(time time.Time, watt uint64) {
-				resultCh <- Result{
-					Time: time,
-					Watt: watt,
-				}
-			})
+			go func() { // たまに止まってしまう時があるので非同期に
+			    // TODO タイムアウト処理必要
+				du.Fetch(func(time time.Time, watt uint64) {
+					resultCh <- Result{
+						Time: time,
+						Watt: watt,
+					}
+				})
+			}()
 		}
 	}
 
