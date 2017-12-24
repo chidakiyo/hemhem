@@ -32,13 +32,27 @@ func main() {
 	du.Init(pwd, rbID)
 
 	resultCh := make(chan Result, 3)
+	executeCh := make(chan string, 3)
 
 	go func() {
 		for {
 			data := <-resultCh
-			// ここでbqとかにぶん投げる
-			logger.Info(fmt.Sprintf("[OUTPUT] %v", data))
+			// TODO ここでbqとかにぶん投げる
+			logger.Info(fmt.Sprintf("[OUTPUT] %+v", data))
 			logger.Info("-----------------------------------------------")
+		}
+	}()
+
+	go func() {
+		for {
+			<-executeCh
+			// TODO タイムアウト処理必要
+			du.Fetch(func(time time.Time, watt uint64) {
+				resultCh <- Result{
+					Time: time,
+					Watt: watt,
+				}
+			}, executeCh)
 		}
 	}()
 
@@ -46,15 +60,7 @@ func main() {
 	for {
 		select {
 		case <-t.C:
-			go func() { // たまに止まってしまう時があるので非同期に
-			    // TODO タイムアウト処理必要
-				du.Fetch(func(time time.Time, watt uint64) {
-					resultCh <- Result{
-						Time: time,
-						Watt: watt,
-					}
-				})
-			}()
+			executeCh <- "" // execute
 		}
 	}
 

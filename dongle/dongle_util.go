@@ -96,7 +96,7 @@ func (du *DongleUtil) Init(pwd string, rbID string) error {
 
 var b = []byte{0x10, 0x81, 0x00, 0x01, 0x05, 0xFF, 0x01, 0x02, 0x88, 0x01, 0x62, 0x01, 0xE7, 0x00}
 
-func (du *DongleUtil) Fetch(f func(time time.Time, watt uint64)) error {
+func (du *DongleUtil) Fetch(f func(time time.Time, watt uint64), queue chan string) error {
 
 	logger := du.Logger // TODO
 
@@ -113,7 +113,7 @@ func (du *DongleUtil) Fetch(f func(time time.Time, watt uint64)) error {
 	}
 	if a[7] != "0012" {
 		fmt.Println(fmt.Sprintf("%s is not 0012. ", a[7]))
-		//continue // TODO 再実行
+		queue <- "one more!" // 再実行する
 	}
 	o := a[8]
 	w, err := strconv.ParseUint(o[len(o)-8:], 16, 0)
@@ -125,4 +125,6 @@ func (du *DongleUtil) Fetch(f func(time time.Time, watt uint64)) error {
 	logger.Info(fmt.Sprintf("%+v", t) + " : " +  fmt.Sprintf("%d", w))
 
 	f(t, w) // output
+
+	return nil
 }
