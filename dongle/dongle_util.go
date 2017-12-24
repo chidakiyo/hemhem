@@ -114,6 +114,7 @@ func (du *DongleUtil) Fetch(f func(time time.Time, watt uint64), queue chan stri
 	if a[7] != "0012" {
 		fmt.Println(fmt.Sprintf("%s is not 0012. ", a[7]))
 		queue <- "one more!" // 再実行する
+		return err
 	}
 	o := a[8]
 	w, err := strconv.ParseUint(o[len(o)-8:], 16, 0)
