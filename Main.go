@@ -34,16 +34,26 @@ func main() {
 	resultCh := make(chan Result, 3)
 	executeCh := make(chan string, 3)
 
-	go func() {
+	resultHandler :=  func() {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println("recover goroutine. :", err) // panic
+			}
+		}()
 		for {
 			data := <-resultCh
 			// TODO ここでbqとかにぶん投げる
 			logger.Info(fmt.Sprintf("[OUTPUT] %+v", data))
 			logger.Info("-----------------------------------------------")
 		}
-	}()
+	}
 
-	go func() {
+	processor :=  func() {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println("recover goroutine. :", err) // panic
+			}
+		}()
 		for {
 			<-executeCh
 			// TODO タイムアウト処理必要
@@ -54,7 +64,10 @@ func main() {
 				}
 			}, executeCh)
 		}
-	}()
+	}
+
+	go processor()
+	go resultHandler()
 
 	t := time.NewTicker(5 * time.Second)
 	for {

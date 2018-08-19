@@ -1,18 +1,28 @@
 package dongle
 
 import (
-	"fmt"
-	"strings"
 	"bufio"
+	"fmt"
 	"github.com/tarm/serial"
+	"runtime"
+	"strings"
 )
 
 func NewDongle() *Dongle {
-	return &Dongle{
+	d := &Dongle{
 		Baudrate: 115200,
-		//SerialDevice: "/dev/ttyUSB0", // raspberry pi.
-		SerialDevice: "/dev/tty.usbserial-A103BTKQ",
 	}
+
+	switch runtime.GOOS {
+	case "darwin":
+		// mac
+		d.SerialDevice = "/dev/tty.usbserial-A103BTKQ"
+	default:
+		// raspberry pi.
+		d.SerialDevice = "/dev/ttyUSB0"
+	}
+
+	return d
 }
 
 type Dongle struct {
@@ -195,7 +205,7 @@ func (b *Dongle) SKSENDTO(handle, ipAddr, port, sec string, data []byte) (string
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		l := scanner.Text()
-		if l != ""{
+		if l != "" {
 			fmt.Println("[RESPONSE] >> " + l)
 		}
 		if strings.Contains(l, "FAIL ") {
